@@ -1,0 +1,12 @@
+vendor
+var
+.git
+.env.local
+.env.local.php
+.env.*.local
+config/jwt
+config/secrets/prod/prod.decrypt.private.php
+config/reference.php
+coverage
+.phpunit.cache
+.DS_Store
