@@ -25,6 +25,9 @@ security:
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        register:
+            pattern: ^/api/register$
+            security: false
         logout:
             pattern: ^/api/logout$
             security: false
@@ -37,6 +40,7 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
         - { path: ^/api/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register$, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 

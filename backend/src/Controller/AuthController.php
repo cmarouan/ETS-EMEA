@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Document\User;
+use App\Dto\RegisterRequest;
 use App\Dto\UpdateAccountRequest;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Authentication\AuthenticationSuccessHandler;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class AuthController extends AbstractController
 {
@@ -21,6 +23,33 @@ final class AuthController extends AbstractController
     public function login(): never
     {
         throw new LogicException('This route is handled by the security firewall.');
+    }
+
+    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
+    public function register(
+        #[MapRequestPayload] RegisterRequest $request,
+        DocumentManager $documentManager,
+        UserPasswordHasherInterface $passwordHasher,
+    ): JsonResponse {
+        $email = mb_strtolower(trim($request->email));
+        $existingUser = $documentManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        if ($existingUser instanceof User) {
+            return $this->json(
+                ['message' => 'Un compte existe déjà avec cette adresse e-mail.'],
+                Response::HTTP_CONFLICT,
+            );
+        }
+
+        $user = (new User())
+            ->setName($request->name)
+            ->setEmail($email);
+        $user->setPassword($passwordHasher->hashPassword($user, $request->password));
+
+        $documentManager->persist($user);
+        $documentManager->flush();
+
+        return $this->json($this->userData($user), Response::HTTP_CREATED);
     }
 
     #[Route('/api/me', name: 'api_me', methods: ['GET'])]

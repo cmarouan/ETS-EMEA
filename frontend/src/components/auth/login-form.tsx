@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,12 @@ export function LoginForm() {
               </>
             )}
           </Button>
+          <p className="text-muted-foreground mt-5 text-center text-sm">
+            Pas encore de compte ?{" "}
+            <Link className="text-accent font-medium hover:underline" href="/register">
+              Créer un compte
+            </Link>
+          </p>
           <p className="text-muted-foreground mt-5 text-center text-xs leading-5">
             En vous connectant, vous acceptez les conditions d’utilisation d’ETS EMEA.
           </p>

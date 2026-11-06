@@ -24,10 +24,10 @@ function redirectToLogin(request: NextRequest) {
 
 export async function proxy(request: NextRequest) {
   const token = request.cookies.get(AUTH_COOKIE)?.value;
-  const isLoginPage = request.nextUrl.pathname === "/login";
+  const isAuthPage = ["/login", "/register"].includes(request.nextUrl.pathname);
 
   if (!token) {
-    return isLoginPage ? NextResponse.next() : redirectToLogin(request);
+    return isAuthPage ? NextResponse.next() : redirectToLogin(request);
   }
 
   try {
@@ -37,19 +37,19 @@ export async function proxy(request: NextRequest) {
     });
 
     if (!response.ok) {
-      return isLoginPage ? NextResponse.next() : redirectToLogin(request);
+      return isAuthPage ? NextResponse.next() : redirectToLogin(request);
     }
 
-    if (isLoginPage) {
+    if (isAuthPage) {
       return NextResponse.redirect(new URL("/sessions", request.url));
     }
 
     return NextResponse.next();
   } catch {
-    return isLoginPage ? NextResponse.next() : redirectToLogin(request);
+    return isAuthPage ? NextResponse.next() : redirectToLogin(request);
   }
 }
 
 export const config = {
-  matcher: ["/login", "/sessions/:path*", "/reservations/:path*", "/account/:path*"],
+  matcher: ["/login", "/register", "/sessions/:path*", "/reservations/:path*", "/account/:path*"],
 };
