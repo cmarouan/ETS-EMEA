@@ -75,11 +75,7 @@ export function LoginForm() {
               <p className="text-destructive mt-1 text-xs">{errors.password.message}</p>
             ) : null}
           </div>
-          {login.isError ? (
-            <p className="text-destructive mt-4 text-sm">
-              La connexion est indisponible pour le moment.
-            </p>
-          ) : null}
+          {login.error ? <p className="text-destructive mt-4 text-sm">{login.error}</p> : null}
           <Button className="mt-7 h-10 w-full" disabled={login.isPending} type="submit">
             {login.isPending ? (
               "Connexion…"
