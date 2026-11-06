@@ -513,7 +513,8 @@
                 "issues": "https://github.com/doctrine/DoctrineMongoDBBundle/issues",
                 "source": "https://github.com/doctrine/DoctrineMongoDBBundle/tree/5.6.1"
             },
-            "time": "2026-10-13T07:30:51+00:00"
+            "time": "2026-10-13T07:30:51+00:00",
+            "published-time": "2026-10-13T07:32:41+00:00"
         },
         {
             "name": "doctrine/persistence",
@@ -1002,7 +1003,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-20T17:47:00+00:00"
+            "time": "2025-12-20T17:47:00+00:00",
+            "published-time": "2025-12-20T17:48:59+00:00"
         },
         {
             "name": "mongodb/mongodb",
@@ -4253,7 +4255,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-04T08:39:20+00:00"
+            "time": "2026-11-04T08:39:20+00:00",
+            "published-time": "2026-11-04T11:31:29+00:00"
         },
         {
             "name": "symfony/security-core",
@@ -5034,7 +5037,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-04T08:39:20+00:00"
+            "time": "2026-11-04T08:39:20+00:00",
+            "published-time": "2026-11-04T11:31:06+00:00"
         },
         {
             "name": "symfony/var-dumper",
@@ -5674,5 +5678,5 @@
         "ext-iconv": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.11.0"
 }
