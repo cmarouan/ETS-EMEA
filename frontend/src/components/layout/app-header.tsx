@@ -1,25 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { toast } from "sonner";
-import { getCurrentUser } from "@/lib/api/get-current-user";
+import { useCurrentUser } from "@/components/auth/current-user-provider";
 import { logout } from "@/lib/api/logout";
-import type { AuthenticatedUser } from "@/types/auth";
 
 export function AppHeader() {
   const router = useRouter();
-  const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const { user } = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  useEffect(() => {
-    getCurrentUser()
-      .then(setUser)
-      .catch(() => undefined);
-  }, []);
 
   async function handleLogout() {
     setIsLoggingOut(true);
