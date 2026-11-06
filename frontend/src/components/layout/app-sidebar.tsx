@@ -9,7 +9,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="bg-card min-h-svh w-60 p-4">
+    <aside className="bg-card sticky top-0 h-svh w-60 overflow-y-auto p-4">
       <div className="mb-8 px-3">
         <p className="text-primary text-lg font-bold tracking-tight">ETS EMEA</p>
         <p className="text-muted-foreground mt-1 text-xs">Language testing</p>
