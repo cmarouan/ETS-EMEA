@@ -15,6 +15,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Unique(fields: ['email'], message: 'An account already exists with this email address.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const ROLE_ADMIN = 'ADMIN';
+    public const ROLE_USER = 'USER';
+
     #[ODM\Id]
     private ?string $id = null;
 
@@ -32,6 +35,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ODM\Field(type: 'string')]
     #[Assert\NotBlank]
     private string $password = '';
+
+    #[ODM\Field(type: 'string')]
+    private string $role = self::ROLE_USER;
 
     public function getId(): ?string
     {
@@ -72,7 +78,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        return [];
+        return ['ROLE_'.$this->role];
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): self
+    {
+        if (!in_array($role, [self::ROLE_ADMIN, self::ROLE_USER], true)) {
+            throw new \InvalidArgumentException(sprintf('Unsupported user role "%s".', $role));
+        }
+
+        $this->role = $role;
+
+        return $this;
     }
 
     public function getPassword(): string

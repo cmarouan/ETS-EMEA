@@ -43,7 +43,8 @@ final class AuthController extends AbstractController
 
         $user = (new User())
             ->setName($request->name)
-            ->setEmail($email);
+            ->setEmail($email)
+            ->setRole(User::ROLE_USER);
         $user->setPassword($passwordHasher->hashPassword($user, $request->password));
 
         $documentManager->persist($user);
@@ -111,7 +112,7 @@ final class AuthController extends AbstractController
     }
 
     /**
-     * @return array{id: string|null, name: string, email: string}
+     * @return array{id: string|null, name: string, email: string, role: string}
      */
     private function userData(User $user): array
     {
@@ -119,6 +120,7 @@ final class AuthController extends AbstractController
             'id' => $user->getId(),
             'name' => $user->getName(),
             'email' => $user->getEmail(),
+            'role' => $user->getRole(),
         ];
     }
 }

@@ -27,8 +27,9 @@ final class SeedDevelopmentDataCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $admin = $this->upsertUser('Admin', 'admin@ets-emea.test', 'admin');
-        $user = $this->upsertUser('User', 'user@ets-emea.test', 'user');
+        $this->normalizeExistingUserRoles();
+        $admin = $this->upsertUser('Admin', 'admin@ets-emea.test', 'admin', User::ROLE_ADMIN);
+        $user = $this->upsertUser('User', 'user@ets-emea.test', 'user', User::ROLE_USER);
         $sessions = $this->upsertSessions();
         $this->documentManager->flush();
 
@@ -45,12 +46,25 @@ final class SeedDevelopmentDataCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function upsertUser(string $name, string $email, string $plainPassword): User
+    private function normalizeExistingUserRoles(): void
+    {
+        foreach ($this->documentManager->getRepository(User::class)->findAll() as $user) {
+            if (!$user instanceof User) {
+                continue;
+            }
+
+            $user->setRole(
+                $user->getEmail() === 'admin@ets-emea.test' ? User::ROLE_ADMIN : User::ROLE_USER,
+            );
+        }
+    }
+
+    private function upsertUser(string $name, string $email, string $plainPassword, string $role): User
     {
         $repository = $this->documentManager->getRepository(User::class);
         $user = $repository->findOneBy(['email' => $email]) ?? new User();
 
-        $user->setName($name)->setEmail($email);
+        $user->setName($name)->setEmail($email)->setRole($role);
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
         $this->documentManager->persist($user);
 
