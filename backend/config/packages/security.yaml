@@ -43,6 +43,7 @@ security:
         - { path: ^/api/register$, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        # - { path: ^/api/sessions/[^/]+$, roles: ROLE_ADMIN, methods: [PUT, DELETE] }
 
 when@test:
     security:

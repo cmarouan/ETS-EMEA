@@ -40,6 +40,14 @@ export async function proxy(request: NextRequest) {
       return isAuthPage ? NextResponse.next() : redirectToLogin(request);
     }
 
+    if (request.nextUrl.pathname.startsWith("/management")) {
+      const user = (await response.json()) as { role?: string };
+
+      if (user.role !== "ADMIN") {
+        return NextResponse.redirect(new URL("/sessions", request.url));
+      }
+    }
+
     if (isAuthPage) {
       return NextResponse.redirect(new URL("/sessions", request.url));
     }
@@ -50,6 +58,14 @@ export async function proxy(request: NextRequest) {
   }
 }
 
+// proxy runs onnly on:
 export const config = {
-  matcher: ["/login", "/register", "/sessions/:path*", "/reservations/:path*", "/account/:path*"],
+  matcher: [
+    "/login",
+    "/register",
+    "/sessions/:path*",
+    "/reservations/:path*",
+    "/account/:path*",
+    "/management/:path*",
+  ],
 };
