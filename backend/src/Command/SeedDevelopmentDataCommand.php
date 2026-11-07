@@ -78,24 +78,35 @@ final class SeedDevelopmentDataCommand extends Command
     {
         $today = new DateTimeImmutable('today');
         $definitions = [
-            ['ETS-EN-001', 'English', $today->modify('+7 days')->setTime(9, 0), 'Casablanca - Maarif', 24],
-            ['ETS-FR-001', 'French', $today->modify('+10 days')->setTime(14, 0), 'Rabat - Agdal', 18],
-            ['ETS-EN-002', 'English', $today->modify('+14 days')->setTime(9, 30), 'Casablanca - CFC', 16],
-            ['ETS-FR-002', 'French', $today->modify('+21 days')->setTime(10, 0), 'Marrakech - Gueliz', 20],
-            ['ETS-EN-003', 'English', $today->modify('+28 days')->setTime(13, 0), 'Rabat - Agdal', 12],
+            ['ETS-EN-001', 'English', $today->modify('+7 days')->setTime(9, 0), 'Casablanca - Maarif', 24, 12],
+            ['ETS-FR-001', 'French', $today->modify('+10 days')->setTime(14, 0), 'Rabat - Agdal', 18, 4],
+            ['ETS-EN-002', 'English', $today->modify('+14 days')->setTime(9, 30), 'Casablanca - CFC', 16, 8],
+            ['ETS-FR-002', 'French', $today->modify('+17 days')->setTime(10, 0), 'Marrakech - Gueliz', 20, 15],
+            ['ETS-EN-003', 'English', $today->modify('+21 days')->setTime(13, 0), 'Rabat - Agdal', 12, 2],
+            ['ETS-FR-003', 'French', $today->modify('+24 days')->setTime(9, 0), 'Casablanca - Maarif', 24, 19],
+            ['ETS-EN-004', 'English', $today->modify('+28 days')->setTime(14, 30), 'Tangier - Centre', 18, 7],
+            ['ETS-FR-004', 'French', $today->modify('+31 days')->setTime(11, 0), 'Casablanca - CFC', 16, 1],
+            ['ETS-EN-005', 'English', $today->modify('+35 days')->setTime(9, 30), 'Marrakech - Gueliz', 20, 20],
+            ['ETS-FR-005', 'French', $today->modify('+38 days')->setTime(15, 0), 'Rabat - Agdal', 14, 6],
+            ['ETS-EN-006', 'English', $today->modify('+42 days')->setTime(10, 0), 'Agadir - Centre', 22, 3],
+            ['ETS-FR-006', 'French', $today->modify('+45 days')->setTime(13, 30), 'Tangier - Centre', 18, 0],
+            ['ETS-EN-007', 'English', $today->modify('+49 days')->setTime(9, 0), 'Casablanca - Maarif', 24, 10],
+            ['ETS-FR-007', 'French', $today->modify('+52 days')->setTime(14, 0), 'Agadir - Centre', 16, 9],
+            ['ETS-EN-008', 'English', $today->modify('+56 days')->setTime(11, 30), 'Rabat - Agdal', 12, 5],
         ];
 
         $repository = $this->documentManager->getRepository(TestSession::class);
         $sessions = [];
 
-        foreach ($definitions as [$code, $language, $startsAt, $location, $capacity]) {
+        foreach ($definitions as [$code, $language, $startsAt, $location, $capacity, $remainingSeats]) {
             $session = $repository->findOneBy(['code' => $code]) ?? new TestSession();
             $session
                 ->setCode($code)
                 ->setLanguage($language)
                 ->setStartsAt($startsAt)
                 ->setLocation($location)
-                ->setCapacity($capacity);
+                ->setCapacity($capacity)
+                ->setRemainingSeats($remainingSeats);
 
             $this->documentManager->persist($session);
             $sessions[] = $session;

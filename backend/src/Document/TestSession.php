@@ -36,6 +36,11 @@ class TestSession
     #[Assert\Positive]
     private int $capacity = 0;
 
+    #[ODM\Field(type: 'int')]
+    #[Assert\PositiveOrZero]
+    #[Assert\LessThanOrEqual(propertyPath: 'capacity')]
+    private int $remainingSeats = 0;
+
     public function getId(): ?string
     {
         return $this->id;
@@ -97,6 +102,18 @@ class TestSession
     public function setCapacity(int $capacity): self
     {
         $this->capacity = $capacity;
+
+        return $this;
+    }
+
+    public function getRemainingSeats(): int
+    {
+        return $this->remainingSeats;
+    }
+
+    public function setRemainingSeats(int $remainingSeats): self
+    {
+        $this->remainingSeats = $remainingSeats;
 
         return $this;
     }

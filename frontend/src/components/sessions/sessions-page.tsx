@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { DayPicker } from "react-day-picker";
-import { CalendarDays, Filter, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarDays, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,72 +12,65 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
+import { getSessions } from "@/lib/api/get-sessions";
 import type { Session } from "@/types/session";
-import { sessionFixtures } from "./session-fixtures";
 import { SessionCard } from "./session-card";
 import { SessionCardSkeleton } from "./session-card-skeleton";
-
-const dayClassNames = {
-  root: "w-full text-sm",
-  months: "w-full",
-  month: "w-full space-y-4",
-  month_caption: "flex h-8 items-center justify-center font-semibold",
-  nav: "absolute inset-x-0 flex justify-between px-1",
-  button_previous: "grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted",
-  button_next: "grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted",
-  month_grid: "w-full border-collapse",
-  weekdays: "flex",
-  weekday: "w-9 flex-1 py-1 text-center text-xs font-medium text-muted-foreground",
-  week: "mt-1 flex w-full",
-  day: "flex-1 text-center",
-  day_button:
-    "grid size-9 place-items-center rounded-md text-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-  selected: "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary",
-  today: "[&>button]:font-bold [&>button]:text-accent",
-} as const;
 
 const SESSIONS_PER_PAGE = 6;
 
 export function SessionsPage() {
-  const [date, setDate] = useState<Date>();
-  const [language, setLanguage] = useState("all");
-  const [location, setLocation] = useState("all");
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [requestKey, setRequestKey] = useState(0);
   const [booking, setBooking] = useState<Session | null>(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(true);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setIsLoadingPreview(false), 350);
-    return () => window.clearTimeout(timeout);
-  }, []);
-  const filtered = useMemo(
-    () =>
-      sessionFixtures.filter(
-        (session) =>
-          (language === "all" || session.language === language) &&
-          (location === "all" || session.location.includes(location)) &&
-          (!date || new Date(session.startsAt).toDateString() === date.toDateString()),
-      ),
-    [date, language, location],
-  );
+    let isCurrent = true;
 
-  const shown = filtered.slice((page - 1) * SESSIONS_PER_PAGE, page * SESSIONS_PER_PAGE);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / SESSIONS_PER_PAGE));
-  const changeFilter = (setter: (value: string) => void, value: string | null) => {
-    if (value) {
-      setter(value);
-      setPage(1);
-    }
-  };
+    void getSessions(page, SESSIONS_PER_PAGE)
+      .then((response) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setSessions(response.data);
+        setTotalItems(response.totalItems);
+        setTotalPages(response.totalPages);
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setHasError(true);
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [page, requestKey]);
+
+  function changePage(nextPage: number) {
+    setIsLoading(true);
+    setHasError(false);
+    setPage(nextPage);
+  }
+
+  function retry() {
+    setIsLoading(true);
+    setHasError(false);
+    setRequestKey((key) => key + 1);
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -97,113 +89,88 @@ export function SessionsPage() {
           </p>
         </div>
       </section>
-      <div className="grid gap-6 xl:grid-cols-[310px_1fr]">
-        <aside className="border-border bg-card h-fit rounded-2xl border p-5 shadow-sm xl:sticky xl:top-6">
-          <div className="flex items-center gap-2">
-            <Filter className="text-accent size-4" />
-            <h2 className="font-semibold">Affiner la recherche</h2>
+      <section>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium">
+              {totalItems} session{totalItems !== 1 ? "s" : ""} disponible
+              {totalItems !== 1 ? "s" : ""}
+            </p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Choisissez la date et le centre qui vous conviennent.
+            </p>
           </div>
-          <div className="border-border relative mt-5 rounded-xl border p-3">
-            <DayPicker
-              mode="single"
-              selected={date}
-              onSelect={(value) => {
-                setDate(value);
-                setPage(1);
-              }}
-              classNames={dayClassNames}
-            />
+          <div className="flex flex-wrap items-center justify-end gap-4">
+            {totalPages > 1 ? (
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                isLoading={isLoading}
+                onPageChange={changePage}
+              />
+            ) : null}
           </div>
-          {date ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-2 w-full"
-              onClick={() => {
-                setDate(undefined);
-                setPage(1);
-              }}
-            >
-              Effacer la date
-            </Button>
-          ) : null}
-          <div className="mt-5 grid gap-3">
-            <Select value={language} onValueChange={(value) => changeFilter(setLanguage, value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Langue" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les langues</SelectItem>
-                <SelectItem value="English">Anglais</SelectItem>
-                <SelectItem value="French">Français</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={location} onValueChange={(value) => changeFilter(setLocation, value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Lieu" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les centres</SelectItem>
-                <SelectItem value="Casablanca">Casablanca</SelectItem>
-                <SelectItem value="Rabat">Rabat</SelectItem>
-                <SelectItem value="Marrakech">Marrakech</SelectItem>
-              </SelectContent>
-            </Select>
+        </div>
+        {isLoading && sessions.length === 0 ? (
+          <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+            {Array.from({ length: SESSIONS_PER_PAGE }, (_, index) => (
+              <SessionCardSkeleton key={index} />
+            ))}
           </div>
-        </aside>
-        <section>
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium">
-                {filtered.length} session{filtered.length !== 1 ? "s" : ""} disponible
-                {filtered.length !== 1 ? "s" : ""}
-              </p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Choisissez la date et le centre qui vous conviennent.
-              </p>
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
-              <MapPin className="text-accent size-4" />
-              Maroc
-            </div>
-          </div>
-          {isLoadingPreview ? (
-            <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-              {Array.from({ length: SESSIONS_PER_PAGE }, (_, index) => (
-                <SessionCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : shown.length ? (
-            <>
-              <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-                {shown.map((session) => (
+        ) : hasError && sessions.length === 0 ? (
+          <EmptyState
+            title="Impossible de charger les sessions"
+            description="Vérifiez votre connexion puis réessayez."
+            action={
+              <Button variant="outline" onClick={retry}>
+                Réessayer
+              </Button>
+            }
+          />
+        ) : sessions.length ? (
+          <>
+            {hasError ? (
+              <div className="border-destructive/30 bg-destructive/5 mb-4 flex items-center justify-between gap-3 rounded-xl border p-3 text-sm">
+                <p>La page demandée n’a pas pu être chargée.</p>
+                <Button size="sm" variant="outline" onClick={retry}>
+                  Réessayer
+                </Button>
+              </div>
+            ) : null}
+            <div className="relative">
+              <div
+                className={`grid gap-5 transition-opacity md:grid-cols-2 2xl:grid-cols-3 ${isLoading ? "pointer-events-none opacity-45" : ""}`}
+                aria-busy={isLoading}
+              >
+                {sessions.map((session) => (
                   <SessionCard key={session.id} session={session} onBook={setBooking} />
                 ))}
+                {Array.from(
+                  { length: Math.max(0, SESSIONS_PER_PAGE - sessions.length) },
+                  (_, index) => (
+                    <div className="invisible" aria-hidden="true" key={`placeholder-${index}`}>
+                      <SessionCardSkeleton />
+                    </div>
+                  ),
+                )}
               </div>
-              <div className="mt-8">
-                <Pagination page={page} totalPages={pageCount} onPageChange={setPage} />
-              </div>
-            </>
-          ) : (
-            <EmptyState
-              title="Aucune session trouvée"
-              description="Essayez de modifier vos filtres pour voir davantage de disponibilités."
-              action={
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setDate(undefined);
-                    setLanguage("all");
-                    setLocation("all");
-                  }}
-                >
-                  Réinitialiser les filtres
-                </Button>
-              }
-            />
-          )}
-        </section>
-      </div>
+              {isLoading ? (
+                <div className="absolute inset-0 grid place-items-center" aria-live="polite">
+                  <div className="bg-card text-foreground flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-lg">
+                    <LoaderCircle className="text-accent size-4 animate-spin" />
+                    Chargement des sessions…
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <EmptyState
+            title="Aucune session trouvée"
+            description="Aucune session future n’est disponible pour le moment."
+          />
+        )}
+      </section>
       <Dialog open={Boolean(booking)} onOpenChange={(open) => !open && setBooking(null)}>
         <DialogContent>
           <DialogHeader>
@@ -214,7 +181,7 @@ export function SessionsPage() {
           </DialogHeader>
           {booking ? (
             <div className="bg-muted rounded-xl p-4">
-              <p className="font-medium">{booking.exam}</p>
+              <p className="font-medium">Session {booking.code}</p>
               <p className="text-muted-foreground mt-1 text-sm">
                 {new Intl.DateTimeFormat("fr-FR", { dateStyle: "full", timeStyle: "short" }).format(
                   new Date(booking.startsAt),

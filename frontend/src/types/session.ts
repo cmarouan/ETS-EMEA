@@ -1,10 +1,9 @@
 export interface Session {
   id: string;
-  language: "English" | "French";
-  exam: string;
+  code: string;
+  language: string;
   startsAt: string;
   location: string;
-  availableSeats: number;
-  totalSeats: number;
-  duration: string;
+  capacity: number;
+  remainingSeats: number;
 }

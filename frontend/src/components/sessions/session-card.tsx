@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, MapPin, Users } from "lucide-react";
+import { MapPin, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -21,7 +21,9 @@ export function SessionCard({
   onBook: (session: Session) => void;
 }) {
   const date = new Date(session.startsAt);
-  const limited = session.availableSeats <= 4;
+  const isFull = session.remainingSeats === 0;
+  const isLimited = session.remainingSeats > 0 && session.remainingSeats <= 4;
+  const availabilityPercentage = (session.remainingSeats / session.capacity) * 100;
 
   return (
     <Card className="group border-border bg-card overflow-visible border py-0 shadow-[0_12px_30px_-22px_rgba(6,68,119,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-20px_rgba(6,68,119,0.35)]">
@@ -37,7 +39,9 @@ export function SessionCard({
             {session.language}
           </Badge>
         </div>
-        <h2 className="font-heading mt-5 text-lg font-semibold tracking-tight">{session.exam}</h2>
+        <h2 className="font-heading mt-5 text-lg font-semibold tracking-tight">
+          Session {session.code}
+        </h2>
         <p className="text-muted-foreground mt-1 text-sm">
           {dateFormatter.format(date)} · {timeFormatter.format(date)}
         </p>
@@ -47,27 +51,28 @@ export function SessionCard({
             {session.location}
           </p>
           <p className="flex items-center gap-2">
-            <Clock3 className="text-accent size-4" />
-            Durée : {session.duration}
+            <Users className="text-accent size-4" />
+            Capacité : {session.capacity} places
           </p>
           <p
-            className={"flex items-center gap-2 " + (limited ? "text-destructive" : "text-success")}
+            className={`flex items-center gap-2 ${isFull || isLimited ? "text-destructive" : "text-success"}`}
           >
             <Users className="size-4" />
-            {session.availableSeats} place{session.availableSeats > 1 ? "s" : ""} restante
-            {session.availableSeats > 1 ? "s" : ""}
+            {isFull
+              ? "Session complète"
+              : `${session.remainingSeats} place${session.remainingSeats > 1 ? "s" : ""} restante${session.remainingSeats > 1 ? "s" : ""}`}
           </p>
         </div>
       </CardContent>
       <CardFooter className="border-border bg-muted/45 flex items-center justify-between gap-3 border-t px-5 py-3.5">
         <div className="bg-border h-1.5 flex-1 overflow-hidden rounded-full">
           <div
-            className={"h-full rounded-full " + (limited ? "bg-destructive" : "bg-success")}
-            style={{ width: `${(session.availableSeats / session.totalSeats) * 100}%` }}
+            className={`h-full rounded-full ${isFull || isLimited ? "bg-destructive" : "bg-success"}`}
+            style={{ width: `${availabilityPercentage}%` }}
           />
         </div>
-        <Button size="sm" onClick={() => onBook(session)}>
-          Réserver
+        <Button size="sm" disabled={isFull} onClick={() => onBook(session)}>
+          {isFull ? "Complet" : "Réserver"}
         </Button>
       </CardFooter>
     </Card>
