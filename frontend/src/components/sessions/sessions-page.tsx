@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { CalendarDays, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
+import { createReservation } from "@/lib/api/create-reservation";
 import { getSessions } from "@/lib/api/get-sessions";
 import type { Session } from "@/types/session";
 import { SessionCard } from "./session-card";
@@ -30,6 +32,7 @@ export function SessionsPage() {
   const [hasError, setHasError] = useState(false);
   const [requestKey, setRequestKey] = useState(0);
   const [booking, setBooking] = useState<Session | null>(null);
+  const [isBooking, setIsBooking] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -70,6 +73,32 @@ export function SessionsPage() {
     setIsLoading(true);
     setHasError(false);
     setRequestKey((key) => key + 1);
+  }
+
+  async function confirmBooking() {
+    if (!booking) return;
+
+    setIsBooking(true);
+
+    try {
+      await createReservation(booking.id);
+      setSessions((currentSessions) =>
+        currentSessions.map((session) =>
+          session.id === booking.id
+            ? { ...session, remainingSeats: Math.max(0, session.remainingSeats - 1) }
+            : session,
+        ),
+      );
+      setBooking(null);
+      toast.success("Votre réservation est confirmée.");
+    } catch (error) {
+      const message = axios.isAxiosError<{ message?: string }>(error)
+        ? error.response?.data.message
+        : undefined;
+      toast.error(message ?? "Impossible de réserver cette session.");
+    } finally {
+      setIsBooking(false);
+    }
   }
 
   return (
@@ -171,7 +200,10 @@ export function SessionsPage() {
           />
         )}
       </section>
-      <Dialog open={Boolean(booking)} onOpenChange={(open) => !open && setBooking(null)}>
+      <Dialog
+        open={Boolean(booking)}
+        onOpenChange={(open) => !open && !isBooking && setBooking(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmer votre réservation</DialogTitle>
@@ -194,16 +226,12 @@ export function SessionsPage() {
             </div>
           ) : null}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBooking(null)}>
+            <Button variant="outline" disabled={isBooking} onClick={() => setBooking(null)}>
               Retour
             </Button>
-            <Button
-              onClick={() => {
-                toast.error("La réservation sera disponible dès que l’API Symfony sera connectée.");
-                setBooking(null);
-              }}
-            >
-              Confirmer la demande
+            <Button disabled={isBooking} onClick={confirmBooking}>
+              {isBooking ? <LoaderCircle className="size-4 animate-spin" /> : null}
+              {isBooking ? "Réservation…" : "Confirmer la réservation"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -5,5 +5,8 @@ export const endpoints = {
     list: "/sessions",
     byId: (id: string) => `/sessions/${id}`,
   },
-  reservations: { list: "/reservations" },
+  reservations: {
+    list: "/reservations",
+    byId: (id: string) => `/reservations/${id}`,
+  },
 } as const;
