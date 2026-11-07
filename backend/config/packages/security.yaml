@@ -37,7 +37,7 @@ security:
             provider: app_user_provider
             jwt: ~
 
-    # Note: Only the *first* matching rule is applied
+    # Note: Only the FIRST matching rule is applied
     access_control:
         - { path: ^/api/login$, roles: PUBLIC_ACCESS }
         - { path: ^/api/register$, roles: PUBLIC_ACCESS }
