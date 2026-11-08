@@ -1,179 +1,286 @@
-# ETS EMEA — Réservation de tests de langues
+# 🌍 ETS EMEA Language Test Reservation Platform
 
-Application composée d’un frontend Next.js / React, d’une API REST Symfony
-et d’une base MongoDB avec Doctrine ODM.
+ETS EMEA is a full-stack platform for browsing language test sessions and managing reservations.
+It includes a responsive Next.js dashboard, a Symfony REST API secured with cookie-based JWT
+authentication, and MongoDB persistence through Doctrine ODM.
 
-## Prérequis
+The application supports two roles:
 
-- Docker Desktop démarré, ou Docker Engine avec le plugin Docker Compose v2.
-- Git pour récupérer le dépôt, ou une copie locale du projet.
-- Ports locaux `3000` et `8000` disponibles.
+- **Users** can register, sign in, update their account, browse available sessions, reserve a
+  session, review their reservations, and cancel their own reservations.
+- **Administrators** can use the same user features and can additionally create, update, and delete
+  test sessions from the session management page.
 
-Vérifier l’installation :
+**Sreens**
 
-```bash
-docker --version
-docker compose version
+| Login | Sessions | Reservations | Update Account | Sessions update (for admins) |
+| --- | --- | --- | --- | --- |
+| - | - | - | - | - |
+
+## 👥 Development accounts
+
+The backend seeds the following accounts automatically when it starts in the `dev` environment:
+
+| Role          | Email                 | Password |
+| ------------- | --------------------- | -------- |
+| Administrator | `admin@ets-emea.test` | `admin`  |
+| User          | `user@ets-emea.test`  | `user`   |
+
+These credentials are intended only for local development and demonstrations. Never use them in a
+production environment.
+
+## 🏗️ Repository structure and architecture
+
+```text
+ETS-EMEA/
+├── frontend/              Next.js application
+├── backend/               Symfony REST API
+├── docker-compose.yml     Local orchestration
+└── README.md              Project-level documentation
 ```
 
-Node.js, PHP, Composer et MongoDB sont fournis par les conteneurs : leur
-installation sur votre ordinateur n’est pas nécessaire.
+### 🎨 Frontend
 
-## Installation et démarrage
+The frontend follows a pragmatic component-based Next.js App Router structure:
 
-1. Récupérer le dépôt ou extraire le projet.
-2. Ouvrir un terminal à la racine du projet, dans le dossier contenant
-   `docker-compose.yml`.
-3. Construire et démarrer les trois services :
+```text
+frontend/src/
+├── app/                   Routes, layouts, providers, loading and error pages
+├── components/
+│   ├── auth/              Login, registration and current-user UI
+│   ├── layout/            Header, sidebar and dashboard shell
+│   ├── management/        Administrator session management UI
+│   ├── reservations/      User reservation UI
+│   ├── sessions/          Session listing and booking UI
+│   ├── shared/            Shared application components
+│   └── ui/                Reusable shadcn-style UI primitives
+├── hooks/                 Reusable client-side behavior
+├── lib/
+│   ├── api/               Axios client and typed API functions
+│   └── schemas/           Zod form schemas
+├── config/                Navigation configuration
+└── types/                 Shared TypeScript types
+```
+
+Routes and layouts remain in `app/`, reusable UI is kept in `components/`, and HTTP access is
+centralized in `lib/api/`. The project uses React Hook Form and Zod for forms and Jest with React
+Testing Library for frontend tests.
+
+See the [frontend README](./frontend/README.md) for frontend-specific documentation.
+
+### ⚙️ Backend
+
+The backend uses Symfony's conventional layered approach:
+
+```text
+backend/
+├── config/                Framework, security, JWT, CORS and Doctrine configuration
+├── src/
+│   ├── Command/           Idempotent development data seeding
+│   ├── Controller/        REST endpoints and HTTP coordination
+│   ├── Document/          Doctrine MongoDB ODM documents
+│   └── Dto/               Validated request and query data
+├── tests/Controller/      PHPUnit functional API tests
+└── docker/                Apache, environment and entrypoint configuration
+```
+
+Controllers handle HTTP requests, DTOs bind and validate request data, Symfony Security handles
+authentication and authorization, and Doctrine MongoDB ODM manages persistence. This intentionally
+avoids heavier DDD or Hexagonal layers because the current business rules and project scope are
+small.
+
+See the [backend README](./backend/README.md) for backend-specific documentation.
+
+## 🧰 Technology and versions
+
+### 🐳 Runtime
+
+| Technology     | Version                            |
+| -------------- | ---------------------------------- |
+| Node.js        | 24, from the frontend Docker image |
+| PHP            | 8.5, Apache image                  |
+| Composer       | 2                                  |
+| MongoDB        | 8.0                                |
+| Docker Compose | Compose v2                         |
+
+### 🎨 Frontend
+
+| Technology            | Version |
+| --------------------- | ------- |
+| Next.js               | 16.4.5  |
+| React / React DOM     | 19.3.0  |
+| TypeScript            | 5.x     |
+| Tailwind CSS          | 4.x     |
+| Axios                 | 1.x     |
+| React Hook Form       | 7.x     |
+| Zod                   | 4.x     |
+| Lucide React          | 1.x     |
+| Jest / jsdom          | 30.5.x  |
+| React Testing Library | 16.3.x  |
+
+### ⚙️ Backend
+
+| Technology                   | Version |
+| ---------------------------- | ------- |
+| Symfony                      | 8.1     |
+| Doctrine MongoDB ODM Bundle  | 5.6.x   |
+| LexikJWTAuthenticationBundle | 3.2.x   |
+| NelmioCorsBundle             | 2.6.x   |
+| PHPUnit                      | 13.4.x  |
+
+The lock files remain the source of truth for exact transitive dependency versions.
+
+## 🔐 Environment configuration
+
+Local Docker defaults are defined in [`backend/docker/dev.env`](./backend/docker/dev.env). They are
+safe demonstration values and must not be reused in production.
+
+### 🧪 Test environment
+
+PHPUnit forces `APP_ENV=test`. Symfony then uses the isolated `ets_emea_test` database through the
+`when@test` Doctrine configuration. Tests clean only this test database and do not modify the local
+`ets_emea` development database.
+
+Local uncommitted secrets can be placed in `.env.local`, `.env.dev.local`, or `.env.test.local` as
+appropriate. Do not commit real secrets, private keys, or production connection strings.
+
+## 🚀 Running the project
+
+### ✅ Requirements
+
+- Docker Desktop, or Docker Engine with Docker Compose v2
+- Git
+- Available local ports `3000` and `8000`
+
+Node.js, PHP, Composer, and MongoDB do not need to be installed on the host.
+
+### ▶️ Start the application
+
+From the repository root:
 
 ```bash
 docker compose up --build -d
 ```
 
-Le premier démarrage peut prendre plusieurs minutes. Le frontend installe ses
-dépendances lors de la construction de l’image. Au démarrage, le backend
-synchronise les dépendances Composer, génère les clés JWT si elles sont absentes,
-prépare le cache Symfony et lance Apache. Aucune génération manuelle des clés
-n’est nécessaire.
-
-Vérifier l’état et consulter les journaux :
+The first build may take several minutes. Check service status and logs with:
 
 ```bash
 docker compose ps
 docker compose logs -f
 ```
 
-`Ctrl+C` quitte l’affichage des journaux sans arrêter les conteneurs.
-Attendre le message de disponibilité de Next.js avant d’ouvrir le frontend.
+Open:
 
-| Service | Accès | Rôle |
-| --- | --- | --- |
-| Frontend | http://localhost:3000 | Interface Next.js / React |
-| Backend | http://localhost:8000 | API Symfony servie par Apache |
-| MongoDB | `database:27017`, depuis Docker | Base `ets_emea` |
+| Service              | URL                           |
+| -------------------- | ----------------------------- |
+| Frontend             | http://localhost:3000         |
+| Symfony API          | http://localhost:8000         |
+| Backend health check | http://localhost:8000/healthz |
 
-Le frontend est actuellement une page vide et les routes métier de l’API ne sont
-pas encore implémentées : une réponse 404 à la racine du backend est donc normale.
-L’adresse http://localhost:8000/healthz vérifie qu’Apache répond ; elle ne teste
-pas les fonctionnalités métier ni la connexion à la base.
+MongoDB is available only inside the Docker network as `database:27017`.
 
-## Configuration
+During backend startup in development, the entrypoint:
 
-Le fichier `docker-compose.yml` décrit les trois conteneurs. Le backend attend
-que MongoDB soit prêt ; le frontend peut démarrer indépendamment.
+1. Synchronizes Composer dependencies.
+2. Generates the JWT key pair if necessary.
+3. Clears the Symfony cache.
+4. Runs the idempotent development seed command.
+5. Starts Apache.
 
-Les paramètres du backend sont définis dans `backend/docker/dev.env`.
-`backend/.env` conserve uniquement les valeurs communes du répertoire partagé
-Symfony et de l’URL utilisée par les commandes CLI. Pour exécuter Symfony hors
-Docker, fournir les paramètres applicatifs, MongoDB, JWT et CORS via
-l’environnement ou un fichier `.env.local` ignoré par Git.
-
-Paramètres Docker :
-
-- `MONGODB_URI` et `MONGODB_DB` : connexion et nom de la base.
-- `APP_ENV`, `APP_DEBUG` et `APP_SECRET` : configuration Symfony.
-- `JWT_SECRET_KEY`, `JWT_PUBLIC_KEY` et `JWT_PASSPHRASE` : signature JWT.
-- `CORS_ALLOW_ORIGIN` : origines autorisées pour les appels du navigateur.
-
-Les adresses de l’API pour le frontend sont définies dans Compose :
-
-- `NEXT_PUBLIC_API_URL=http://localhost:8000` pour les appels du navigateur.
-- `API_INTERNAL_URL=http://backend` pour les appels serveur depuis Next.js.
-
-Ces variables sont disponibles pour la future intégration Axios.
-Après une modification de la configuration Compose ou de `dev.env`, appliquer :
+### ⏹️ Stop the application
 
 ```bash
-docker compose up -d
-```
-
-Cette configuration est destinée au développement et à l’exécution locale :
-Next.js et Symfony utilisent le mode développement, les secrets sont des valeurs
-de démonstration et MongoDB n’active pas l’authentification. Les ports applicatifs
-sont limités à votre ordinateur et MongoDB n’expose aucun port hôte.
-Un déploiement public nécessite une configuration de production avec secrets
-privés, authentification MongoDB, HTTPS et build de production du frontend.
-
-## Développement et dépendances
-
-Les dossiers source sont partagés avec les conteneurs pour permettre les
-modifications en direct. Les dépendances Linux et les caches utilisent des volumes
-séparés des fichiers générés sur votre ordinateur.
-
-Ajouter une dépendance frontend :
-
-```bash
-docker compose exec frontend npm install nom-du-paquet
-```
-
-Si `package-lock.json` a été modifié sur votre ordinateur ou après une mise à jour
-du dépôt, synchroniser les dépendances du conteneur :
-
-```bash
-docker compose exec frontend npm ci
-```
-
-Ajouter une dépendance backend :
-
-```bash
-docker compose exec backend composer require fournisseur/paquet
-```
-
-Conserver les fichiers de dépendances et de verrouillage dans Git. Reconstruire
-les images après modification des Dockerfiles ou des fichiers sous `docker/` :
-
-```bash
-docker compose up --build -d
-```
-
-Reconstruire l’image frontend ne remplace pas le contenu d’un volume de dépendances
-existant : utiliser `npm ci` comme indiqué ci-dessus.
-
-## Vérifications et commandes utiles
-
-```bash
-# Informations Symfony et validation de la configuration
-docker compose exec backend php bin/console about
-docker compose exec backend php bin/console lint:yaml config
-docker compose exec backend php bin/console lint:container
-
-# Analyse du frontend
-docker compose exec frontend npm run lint
-
-# Console MongoDB
-docker compose exec database mongosh ets_emea
-
-# Journaux du backend uniquement
-docker compose logs -f backend
-```
-
-Les documents MongoDB seront placés dans `backend/src/Document/`.
-
-## Arrêt et conservation des données
-
-```bash
-# Arrêter et supprimer les conteneurs, en conservant les volumes
 docker compose down
-
-# Relancer le projet
-docker compose up -d
 ```
 
-Les volumes conservent les dépendances, les caches, les clés JWT et les données
-MongoDB. Ils ne constituent pas des conteneurs supplémentaires.
-
-Pour une remise à zéro volontaire uniquement :
+This preserves MongoDB data, dependencies, caches, and JWT keys in named volumes. To deliberately
+remove all local volumes and data:
 
 ```bash
 docker compose down --volumes
 ```
 
-Cette dernière commande supprime aussi les données MongoDB et les clés JWT.
+### 🧪 Run checks and tests
 
-## Dépannage
+```bash
+# Backend tests
+docker compose exec backend php bin/phpunit
 
-- **Docker inaccessible** : démarrer Docker Desktop ou le service Docker.
-- **Port déjà utilisé** : arrêter l’application qui occupe le port concerné.
-- **Erreur au démarrage** : consulter `docker compose logs frontend backend database`.
-- **Paquet frontend introuvable** : exécuter `docker compose exec frontend npm ci`.
-- **Backend 404 sur `/`** : attendu tant que les routes métier ne sont pas créées.
+# Symfony configuration validation
+docker compose exec backend php bin/console lint:yaml config
+docker compose exec backend php bin/console lint:container
+
+# Frontend tests
+docker compose exec frontend npm test
+
+# Frontend lint and production build verification
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run build
+```
+
+Run tests in watch mode while developing the frontend:
+
+```bash
+docker compose exec frontend npm run test:watch
+```
+
+## 🌐 Production deployment checklist
+
+The provided Compose setup is optimized for local development. Before deploying publicly, make the
+following changes.
+
+### 1. 🔑 Use production environment values
+
+- Set `APP_ENV=prod` and `APP_DEBUG=0`.
+- Generate a strong, unique `APP_SECRET`.
+- Generate a strong JWT passphrase and production JWT key pair.
+- Store secrets in the deployment platform's secret manager instead of committed environment files.
+- Set `JWT_COOKIE_SECURE=1` so the authentication cookie is sent only over HTTPS.
+- Restrict `CORS_ALLOW_ORIGIN` to the exact production frontend origin.
+
+### 2. 🛡️ Secure MongoDB
+
+- Use a managed MongoDB service or a production MongoDB deployment with authentication enabled.
+- Use a dedicated application user with only the required database permissions.
+- Use TLS and a private network where possible.
+- Set production `MONGODB_URI` and `MONGODB_DB` values through deployment secrets.
+- Configure backups, retention, monitoring, and recovery procedures.
+
+### 3. 📦 Build production images
+
+- Replace bind-mounted source directories with immutable application images.
+- Build the frontend with `npm ci` and `npm run build`, then run it with `npm run start`.
+- Install backend dependencies with `composer install --no-dev --classmap-authoritative`.
+- Warm the Symfony production cache during the image build or release phase.
+- Do not run the development seed command in production.
+- Create Doctrine MongoDB indexes as an explicit deployment or release step.
+
+### 4. 🔒 Configure networking and HTTPS
+
+- Put the frontend and API behind a production reverse proxy or load balancer.
+- Configure valid TLS certificates and redirect HTTP traffic to HTTPS.
+- Set `NEXT_PUBLIC_API_URL` to the public HTTPS API URL.
+- Set `API_INTERNAL_URL` to the API's private service URL when server-side calls use an internal
+  network.
+- Expose only required public ports; never expose MongoDB directly to the internet.
+
+### 5. 💾 Persist and protect runtime data
+
+- Store JWT keys in a persistent secret mount or secret manager.
+- Use durable storage only where the deployment architecture requires it.
+- Send logs to centralized storage and add application and infrastructure monitoring.
+- Define health checks, restart policies, resource limits, and a rollback strategy.
+
+### 6. ✅ Validate before release
+
+Run the complete quality checks in CI before producing a release:
+
+```bash
+docker compose exec backend php bin/phpunit
+docker compose exec frontend npm test -- --runInBand
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run build
+```
+
+Also verify production environment variables, HTTPS cookies, CORS behavior, MongoDB connectivity,
+JWT key access, and database indexes in a staging environment before deploying to production.
