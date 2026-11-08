@@ -19,8 +19,11 @@ export function AppHeader() {
 
     try {
       await logout();
+      setMenuOpen(false);
+      setIsLoggingOut(false);
       toast.success("Vous êtes déconnecté.");
       router.replace("/login");
+      router.refresh();
     } catch {
       toast.error("Impossible de vous déconnecter pour le moment.");
       setIsLoggingOut(false);

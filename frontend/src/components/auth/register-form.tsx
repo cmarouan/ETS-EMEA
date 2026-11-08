@@ -16,9 +16,11 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { name: "", email: "", password: "" },
   });
 
   return (
@@ -36,12 +38,12 @@ export function RegisterForm() {
           </p>
           <div className="mt-7 space-y-5">
             <div>
-              <Label htmlFor="name">
+              <Label htmlFor="register-name">
                 <UserRound className="text-accent size-4" />
                 Nom complet
               </Label>
               <Input
-                id="name"
+                id="register-name"
                 className="mt-2 h-10"
                 autoComplete="name"
                 placeholder="Votre nom"
@@ -52,12 +54,12 @@ export function RegisterForm() {
               ) : null}
             </div>
             <div>
-              <Label htmlFor="email">
+              <Label htmlFor="register-email">
                 <Mail className="text-accent size-4" />
                 E-mail
               </Label>
               <Input
-                id="email"
+                id="register-email"
                 className="mt-2 h-10"
                 autoComplete="email"
                 type="email"
@@ -69,12 +71,12 @@ export function RegisterForm() {
               ) : null}
             </div>
             <div>
-              <Label htmlFor="password">
+              <Label htmlFor="register-password">
                 <LockKeyhole className="text-accent size-4" />
                 Mot de passe
               </Label>
               <Input
-                id="password"
+                id="register-password"
                 className="mt-2 h-10"
                 autoComplete="new-password"
                 type="password"
@@ -99,7 +101,11 @@ export function RegisterForm() {
           </Button>
           <p className="text-muted-foreground mt-5 text-center text-sm">
             Vous avez déjà un compte ?{" "}
-            <Link className="text-accent font-medium hover:underline" href="/login">
+            <Link
+              className="text-accent font-medium hover:underline"
+              href="/login"
+              onClick={() => reset()}
+            >
               Se connecter
             </Link>
           </p>

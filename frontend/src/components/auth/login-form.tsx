@@ -16,9 +16,11 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
   });
 
   function onSubmit(values: LoginFormValues) {
@@ -38,12 +40,12 @@ export function LoginForm() {
           </p>
           <div className="mt-7 space-y-5">
             <div>
-              <Label htmlFor="email">
+              <Label htmlFor="login-email">
                 <Mail className="text-accent size-4" />
                 E-mail
               </Label>
               <Input
-                id="email"
+                id="login-email"
                 className="mt-2 h-10"
                 autoComplete="email"
                 type="email"
@@ -56,7 +58,7 @@ export function LoginForm() {
             ) : null}
             <div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">
+                <Label htmlFor="login-password">
                   <LockKeyhole className="text-accent size-4" />
                   Mot de passe
                 </Label>
@@ -65,7 +67,7 @@ export function LoginForm() {
                 </button>
               </div>
               <Input
-                id="password"
+                id="login-password"
                 className="mt-2 h-10"
                 autoComplete="current-password"
                 type="password"
@@ -88,7 +90,11 @@ export function LoginForm() {
           </Button>
           <p className="text-muted-foreground mt-5 text-center text-sm">
             Pas encore de compte ?{" "}
-            <Link className="text-accent font-medium hover:underline" href="/register">
+            <Link
+              className="text-accent font-medium hover:underline"
+              href="/register"
+              onClick={() => reset()}
+            >
               Créer un compte
             </Link>
           </p>
