@@ -16,6 +16,11 @@ doctrine_mongodb:
                     dir: '%kernel.project_dir%/src/Document'
                     prefix: 'App\Document'
 
+when@test:
+    doctrine_mongodb:
+        # Keep destructive test cleanup isolated from the development database.
+        default_database: ets_emea_test
+
 when@prod:
     doctrine_mongodb:
         auto_generate_proxy_classes: false
