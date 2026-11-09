@@ -15,7 +15,7 @@ The application supports two roles:
 
 | Login | Sessions | Reservations | Update Account | Sessions update (for admins) |
 | --- | --- | --- | --- | --- |
-| - | - | - | - | - |
+| <img width="1512" height="859" alt="Screenshot 2026-11-09 at 10 13 58" src="https://github.com/user-attachments/assets/5b49ecda-b909-476b-ab10-6b7b9d9d38f9" /> | <img width="1512" height="859" alt="Screenshot 2026-11-09 at 10 15 07" src="https://github.com/user-attachments/assets/ef86e2bd-647e-4627-98b0-c93dd00c435b" /> | <img width="1512" height="859" alt="Screenshot 2026-11-09 at 10 15 57" src="https://github.com/user-attachments/assets/4daf42eb-7d5d-49aa-9ce4-75eb52428530" /> | <img width="1512" height="859" alt="Screenshot 2026-11-09 at 10 18 37" src="https://github.com/user-attachments/assets/6b9e9d75-fe08-48b6-824b-cef6f946a980" /> | <img width="1512" height="859" alt="Screenshot 2026-11-09 at 10 17 26" src="https://github.com/user-attachments/assets/71b6d56f-b1ee-4738-a0b9-dbe5a6029fa7" /> |
 
 ## 👥 Development accounts
 
